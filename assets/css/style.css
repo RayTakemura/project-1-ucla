@@ -14,11 +14,6 @@ h1 {
     font-family: "New Tegomin";padding-top: 20px;
 }
 
-#searches{
-padding-top: 5px;
-padding-bottom: 30px;
-}
-
 li {
     display: inline-block;
     overflow: hidden;
@@ -32,4 +27,52 @@ li {
 .orbit-image {
     margin: -270px 0 -150px 0;
     width: 100%;
+}
+
+.bullet {
+    padding-right: 20px;
+    padding-bottom: 25px;
+    padding-top: 5px;
+    font-family: "New Tegomin";
+}
+#searchbox{
+    margin-top: 25px;
+}
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (max-width: 600px) {
+    li {
+        display: none;
+        overflow: none;
+        
+    }
+    .orbit {
+        max-height: none;
+        
+    }
+    
+    .orbit-image {
+        margin: none;
+        width: 100%;
+    }
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {
+
 }
