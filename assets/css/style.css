@@ -19,6 +19,17 @@ padding-top: 5px;
 padding-bottom: 30px;
 }
 
+li {
+    display: inline-block;
+    overflow: hidden;
+    
+}
 .orbit {
     max-height: max-content;
+    
+}
+
+.orbit-image {
+    margin: -270px 0 -150px 0;
+    width: 100%;
 }
