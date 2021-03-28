@@ -96,39 +96,39 @@ var geoCityDB = function (lat, lon) {
 		"x-rapidapi-host": "wft-geo-db.p.rapidapi.com"
 	}
 })
-.then(function(response) {
-    if (response.ok) {
-        response.json().then(function(data) {
-            console.log(data);
+    .then(function(response) {
+        if (response.ok) {
+            response.json().then(function(data) {
+                console.log(data);
 
-            // extract each nearby city 
-            //data[i].city for name.
-            //data[i].latitude and data[i].longitude fr their coordinates
+                // extract each nearby city 
+                //data[i].city for name.
+                //data[i].latitude and data[i].longitude fr their coordinates
 
-            // limit recommended searches to 3
-            for (var i = 1; i < 4; i++) {
-                //extract city
-                var cityRec = data.data[i].city;
-                console.log(cityRec);
+                // limit recommended searches to 3
+                for (var i = 1; i < 4; i++) {
+                    //extract city
+                    var cityRec = data.data[i].city;
+                    console.log(cityRec);
 
-                //extract coordinates from the data
-                var CityRecLat = data.data[i].latitude;
-                var CityRecLong = data.data[i].longitude;
+                    //extract coordinates from the data
+                    var CityRecLat = data.data[i].latitude;
+                    var CityRecLong = data.data[i].longitude;
 
-                console.log("lat is " + CityRecLat + " and lon is " + CityRecLong)
+                    console.log("lat is " + CityRecLat + " and lon is " + CityRecLong)
 
-                // creating button element that needs to be inserted into the search history list
-                var cityRecButtonEl = document.createElement("a");
-                cityRecButtonEl.className = "button";
-                cityRecButtonEl.innerHTML = cityRec;
+                    // creating button element that needs to be inserted into the search history list
+                    var cityRecButtonEl = document.createElement("a");
+                    cityRecButtonEl.className = "button";
+                    cityRecButtonEl.innerHTML = cityRec;
 
-            }
+                }
 
-        })
-    }
-})
-.catch(err => {
-	console.error(err);
-});
-
-openWeather(cityInput);
+            })
+        }
+    })
+    .catch(err => {
+        console.error(err);
+    });
+}
+    openWeather(cityInput);
