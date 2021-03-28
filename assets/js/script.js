@@ -4,6 +4,8 @@ var apiKeyOW = "69b9ebd4d042c48c14532ef8693d871e";
 
 var cityInput = "Los Angeles"
 
+var searchButtonEl = document.getElementById("searchbutton");
+
 var openWeather = function (cityName) {
 
     // handling cities with spaces in their name
@@ -23,9 +25,11 @@ var openWeather = function (cityName) {
                 console.log(data);
 
                 // calling open city DB API
-                var latitude = +34.05;
-                var longitude = -118.24;
+                var latitude = data.city.coord.lat;
+                var longitude = data.city.coord.lon;
                 geoCityDB(latitude, longitude);
+
+                //TODO possibly empty forecast element
 
                 // for loop to make a forecast of 5 days
                 for (var i = 0; i < 4; i++) {
@@ -35,8 +39,8 @@ var openWeather = function (cityName) {
                     // creation of each card holder
                     var dailyCard = document.createElement("div");
 
-                    // TODO: Structure based on foundation
-                    // dailyCard.className = "bg-primary col day-forecast";
+                    // TODO: Structure based on foundation 
+                    dailyCard.className = "columns small-2 primary";
 
                     // h4 date header
                     var dateEl = document.createElement("h4");
@@ -74,9 +78,7 @@ var openWeather = function (cityName) {
                     humidityDiv.textContent = "Humidity: " + data.list[convertedIndex].main.humidity + "%";
                     dailyCard.appendChild(humidityDiv);
 
-                    // append card to the 5 day forecast row
-
-                    // TODO append to card holder
+                    //TODO Need forecast holder element
                     //fiveDayForecastEl.appendChild(dailyCard);
                 }   
             })
@@ -87,7 +89,7 @@ var openWeather = function (cityName) {
 
 var geoCityDB = function (lat, lon) {
     console.log("calling geoCityDB with" + lat + lon)
-    fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/adminDivisions?location=" + lat + lon, {
+    fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/locations/" + lat + lon +"/nearbyCities?radius=100&limit=5", {
 	"method": "GET",
 	"headers": {
 		"x-rapidapi-key": "b86f90e0b2msh50777cebadf2bf8p18ae10jsn2ea6375c04a8",
@@ -98,15 +100,35 @@ var geoCityDB = function (lat, lon) {
     if (response.ok) {
         response.json().then(function(data) {
             console.log(data);
+
+            // extract each nearby city 
+            //data[i].city for name.
+            //data[i].latitude and data[i].longitude fr their coordinates
+
+            // limit recommended searches to 3
+            for (var i = 1; i < 4; i++) {
+                //extract city
+                var cityRec = data.data[i].city;
+                console.log(cityRec);
+
+                //extract coordinates from the data
+                var CityRecLat = data.data[i].latitude;
+                var CityRecLong = data.data[i].longitude;
+
+                console.log("lat is " + CityRecLat + " and lon is " + CityRecLong)
+
+                // creating button element that needs to be inserted into the search history list
+                var cityRecButtonEl = document.createElement("a");
+                cityRecButtonEl.className = "button";
+                cityRecButtonEl.innerHTML = cityRec;
+
+            }
+
         })
     }
 })
 .catch(err => {
 	console.error(err);
 });
-    
-
-
-}
 
 openWeather(cityInput);
