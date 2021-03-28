@@ -5,6 +5,8 @@ var apiKeyOW = "69b9ebd4d042c48c14532ef8693d871e";
 var searchButtonEl = document.getElementById("searchbutton");
 var nearbyCitiesEl = document.getElementById("nearby-cities");
 var searchInputEl =document.getElementById("search-input");
+var travelPathEl = document.getElementById("travel-path");
+var forecastEl = document.getElementById("forecast-list");
 
 // TODO delete and load via a local storage function
 var travelList = [];
@@ -34,7 +36,7 @@ var openWeather = function (cityName) {
 
                 //TODO possibly empty forecast element
 
-                // for loop to make a forecast of 5 days
+                // for loop to make a forecast of 4 days
                 for (var i = 0; i < 4; i++) {
                     // loop to get 4 days worth of forecast
                     var convertedIndex = (i*8);
@@ -43,7 +45,7 @@ var openWeather = function (cityName) {
                     var dailyCard = document.createElement("div");
 
                     // TODO: Structure based on foundation 
-                    dailyCard.className = "columns small-2 primary";
+                    dailyCard.className = "columns small-2 primary day-forecast";
 
                     // h4 date header
                     var dateEl = document.createElement("h4");
@@ -82,11 +84,20 @@ var openWeather = function (cityName) {
                     dailyCard.appendChild(humidityDiv);
 
                     //TODO Need forecast holder element
-                    //fiveDayForecastEl.appendChild(dailyCard);
+                    forecastEl.appendChild(dailyCard);
                 }   
             })
+
+        // error handling for bad responses
+        } else {
+            alert("Error: " + response.status);
         }
     })
+    // additional error catching
+    .catch(function(error) {
+        // catch() getting chained onto the end of the then
+        alert("Connection Error")
+    });
 
 }
 

@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.6.3/dist/css/foundation.min.css"
     integrity="sha256-ogmFxjqiTMnZhxCqVmcqTvjfe1Y/ec4WaRj/aQPvn+I=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/motion-ui@1.2.3/dist/motion-ui.min.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="./assets/css/style.css">
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=New+Tegomin">
   <title>Gathering of Informed Traveler</title>
@@ -88,14 +89,19 @@
   </div>
 
   <div class='row' div id="search-history">
+
+
     <div class='columns small-8'>
+
+      <!-- recommended cities list input element -->
       <div id='searchbox' class="grid-x grid-padding-x align-spaced">
-        
         <p class="bullet">Recommended Nearby Cities:</p>
-        <ul class="menu search-from" id="travel-path">
+        <ul class="menu search-from" id="nearby-cities">
           
         </ul>
       </div>
+
+      <!-- history list element -->
       <div class='row' div id="search-history list">
         <div id="historybox" class="grid-x grid-padding-x align-spaced">
           <ul class="historybx" id="historylist">
@@ -103,6 +109,16 @@
           </ul>
         </div>
       </div>
+
+            <!-- history list element -->
+            <div class='row' div id="forecast-histor-list">
+              <div id="forecastbox" class="grid-x grid-padding-x align-spaced">
+                <ul class="forecast" id="forecast-list">
+                  
+                </ul>
+              </div>
+            </div>
+
 
     </div>
   </div>
