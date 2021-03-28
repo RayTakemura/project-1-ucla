@@ -2,9 +2,12 @@ $(document).foundation();
 
 var apiKeyOW = "69b9ebd4d042c48c14532ef8693d871e";
 
-var cityInput = "Los Angeles"
-
 var searchButtonEl = document.getElementById("searchbutton");
+var nearbyCitiesEl = document.getElementById("nearby-cities");
+var searchInputEl =document.getElementById("search-input");
+
+// TODO delete and load via a local storage function
+var travelList = [];
 
 var openWeather = function (cityName) {
 
@@ -56,7 +59,7 @@ var openWeather = function (cityName) {
                         iconDiv.innerHTML = "<i class='fas fa-sun'></i>"
                     } else if (forecastWeather === "Clouds") {
                         iconDiv.innerHTML = "<i class='fas fa-cloud'></i>"
-                    } else if (forecastWeather === "Rain" || weather === "Drizzle") {
+                    } else if (forecastWeather === "Rain" || forecastWeather === "Drizzle") {
                         iconDiv.innerHTML = "<i class='fas fa-cloud-rain'></i>"
                     } else if (forecastWeather === "Thunderstorm") {
                         iconDiv.innerHTML = "<i class='fas fa-bolt'></i>"
@@ -119,9 +122,10 @@ var geoCityDB = function (lat, lon) {
 
                     // creating button element that needs to be inserted into the search history list
                     var cityRecButtonEl = document.createElement("a");
-                    cityRecButtonEl.className = "button";
+                    cityRecButtonEl.className = "button city-recommendation";
                     cityRecButtonEl.innerHTML = cityRec;
 
+                    nearbyCitiesEl.appendChild(cityRecButtonEl);
                 }
 
             })
@@ -131,4 +135,25 @@ var geoCityDB = function (lat, lon) {
         console.error(err);
     });
 }
-    openWeather(cityInput);
+
+var addToTheList = function (){
+    console.log("add to the list function called")
+}
+
+// ready the function to accept search inputs
+$(document).ready(
+    $("#search-button").on("click",function() {
+    var searchInput = $("#search-input").val();
+
+    openWeather(searchInput);
+    })
+);
+
+// ready the function to accept button clicks of nearby cities
+
+
+$('body').on('click', '.city-recommendation', function () {
+    var buttonValue = $(this).html();
+    console.log("the city is being called")
+    console.log(buttonValue);
+});
