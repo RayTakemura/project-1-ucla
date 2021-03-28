@@ -94,8 +94,12 @@ var geoCityDB = function (lat, lon) {
 		"x-rapidapi-host": "wft-geo-db.p.rapidapi.com"
 	}
 })
-.then(response => {
-	console.log(response);
+.then(function(response) {
+    if (response.ok) {
+        response.json().then(function(data) {
+            console.log(data);
+        })
+    }
 })
 .catch(err => {
 	console.error(err);
