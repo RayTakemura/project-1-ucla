@@ -34,7 +34,8 @@ var openWeather = function (cityName) {
                 var longitude = data.city.coord.lon;
                 geoCityDB(latitude, longitude);
 
-                //TODO possibly empty forecast element
+                // possibly empty forecast element
+                forecastEl.innerHTML = ""; 
 
                 // for loop to make a forecast of 4 days
                 for (var i = 0; i < 4; i++) {
@@ -45,7 +46,7 @@ var openWeather = function (cityName) {
                     var dailyCard = document.createElement("div");
 
                     // TODO: Structure based on foundation 
-                    dailyCard.className = "columns small-2 primary day-forecast";
+                    dailyCard.className = "cell small-2 primary day-forecast";
 
                     // h4 date header
                     var dateEl = document.createElement("h4");
@@ -119,8 +120,10 @@ var geoCityDB = function (lat, lon) {
                 //data[i].city for name.
                 //data[i].latitude and data[i].longitude fr their coordinates
 
+                //empty the recommendations before moving on
+                nearbyCitiesEl.innerHTML = "";
                 // limit recommended searches to 3
-                for (var i = 1; i < 4; i++) {
+                for (var i = 2; i < 5; i++) {
                     //extract city
                     var cityRec = data.data[i].city;
                     console.log(cityRec);
@@ -131,6 +134,7 @@ var geoCityDB = function (lat, lon) {
 
                     console.log("lat is " + CityRecLat + " and lon is " + CityRecLong)
 
+                    
                     // creating button element that needs to be inserted into the search history list
                     var cityRecButtonEl = document.createElement("a");
                     cityRecButtonEl.className = "button city-recommendation";
@@ -167,4 +171,6 @@ $('body').on('click', '.city-recommendation', function () {
     var buttonValue = $(this).html();
     console.log("the city is being called")
     console.log(buttonValue);
+
+    openWeather(buttonValue);
 });
