@@ -2,9 +2,14 @@ $(document).foundation();
 
 var apiKeyOW = "69b9ebd4d042c48c14532ef8693d871e";
 
-var cityInput = "Los Angeles"
-
 var searchButtonEl = document.getElementById("searchbutton");
+var nearbyCitiesEl = document.getElementById("nearby-cities");
+var searchInputEl =document.getElementById("search-input");
+var travelPathEl = document.getElementById("travel-path");
+var forecastEl = document.getElementById("forecast-list");
+
+// TODO delete and load via a local storage function
+var travelList = [];
 
 var openWeather = function (cityName) {
 
@@ -29,9 +34,10 @@ var openWeather = function (cityName) {
                 var longitude = data.city.coord.lon;
                 geoCityDB(latitude, longitude);
 
-                //TODO possibly empty forecast element
+                // possibly empty forecast element
+                forecastEl.innerHTML = ""; 
 
-                // for loop to make a forecast of 5 days
+                // for loop to make a forecast of 4 days
                 for (var i = 0; i < 4; i++) {
                     // loop to get 4 days worth of forecast
                     var convertedIndex = (i*8);
@@ -40,7 +46,7 @@ var openWeather = function (cityName) {
                     var dailyCard = document.createElement("div");
 
                     // TODO: Structure based on foundation 
-                    dailyCard.className = "columns small-2 primary";
+                    dailyCard.className = "cell small-2 primary day-forecast";
 
                     // h4 date header
                     var dateEl = document.createElement("h4");
@@ -56,7 +62,7 @@ var openWeather = function (cityName) {
                         iconDiv.innerHTML = "<i class='fas fa-sun'></i>"
                     } else if (forecastWeather === "Clouds") {
                         iconDiv.innerHTML = "<i class='fas fa-cloud'></i>"
-                    } else if (forecastWeather === "Rain" || weather === "Drizzle") {
+                    } else if (forecastWeather === "Rain" || forecastWeather === "Drizzle") {
                         iconDiv.innerHTML = "<i class='fas fa-cloud-rain'></i>"
                     } else if (forecastWeather === "Thunderstorm") {
                         iconDiv.innerHTML = "<i class='fas fa-bolt'></i>"
@@ -79,11 +85,20 @@ var openWeather = function (cityName) {
                     dailyCard.appendChild(humidityDiv);
 
                     //TODO Need forecast holder element
-                    //fiveDayForecastEl.appendChild(dailyCard);
+                    forecastEl.appendChild(dailyCard);
                 }   
             })
+
+        // error handling for bad responses
+        } else {
+            alert("Error: " + response.status);
         }
     })
+    // additional error catching
+    .catch(function(error) {
+        // catch() getting chained onto the end of the then
+        alert("Connection Error")
+    });
 
 }
 
@@ -105,8 +120,10 @@ var geoCityDB = function (lat, lon) {
                 //data[i].city for name.
                 //data[i].latitude and data[i].longitude fr their coordinates
 
+                //empty the recommendations before moving on
+                nearbyCitiesEl.innerHTML = "";
                 // limit recommended searches to 3
-                for (var i = 1; i < 4; i++) {
+                for (var i = 2; i < 5; i++) {
                     //extract city
                     var cityRec = data.data[i].city;
                     console.log(cityRec);
@@ -117,11 +134,13 @@ var geoCityDB = function (lat, lon) {
 
                     console.log("lat is " + CityRecLat + " and lon is " + CityRecLong)
 
+                    
                     // creating button element that needs to be inserted into the search history list
                     var cityRecButtonEl = document.createElement("a");
-                    cityRecButtonEl.className = "button";
+                    cityRecButtonEl.className = "button city-recommendation";
                     cityRecButtonEl.innerHTML = cityRec;
 
+                    nearbyCitiesEl.appendChild(cityRecButtonEl);
                 }
 
             })
@@ -131,4 +150,27 @@ var geoCityDB = function (lat, lon) {
         console.error(err);
     });
 }
-    openWeather(cityInput);
+
+var addToTheList = function (){
+    console.log("add to the list function called")
+}
+
+// ready the function to accept search inputs
+$(document).ready(
+    $("#search-button").on("click",function() {
+    var searchInput = $("#search-input").val();
+
+    openWeather(searchInput);
+    })
+);
+
+// ready the function to accept button clicks of nearby cities
+
+
+$('body').on('click', '.city-recommendation', function () {
+    var buttonValue = $(this).html();
+    console.log("the city is being called")
+    console.log(buttonValue);
+
+    openWeather(buttonValue);
+});

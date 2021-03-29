@@ -34,9 +34,31 @@ li {
     padding-bottom: 25px;
     padding-top: 5px;
     font-family: "New Tegomin";
+    text-align: center;
 }
 #searchbox{
     margin-top: 25px;
+}
+
+/* future forcast design */
+.day-forecast {
+    padding: 8px;
+    padding-top: 12px;
+    border-radius: 4px;
+    color: black;
+    margin-right: 20px;
+    line-height: 3;
+    border: 3px solid black;
+}
+
+.day-forecast h4 {
+    font-size: 20px;
+}
+.day-forecast div {
+    font-size: 16px;
+}
+.day-forecast div i {
+    font-size: 35px;
 }
 
 /* Extra small devices (phones, 600px and down) */
