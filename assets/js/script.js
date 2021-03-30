@@ -156,18 +156,24 @@ var addToTheList = function (){
     console.log("add to the list function called")
 }
 
-// ready the function to accept search inputs
-$(document).ready(
-    $("#search-button").on("click",function() {
-    var searchInput = $("#search-input").val();
-    savingTheOrigin.innerHTML = searchInput;
-    openWeather(searchInput);
-    })
-);
+
+$("body").submit(function(event) {
+    event.preventDefault();
+    var searchInputFrom = $("#search-input-from").val();
+    var searchInputTo = $('#search-input-to').val();
+    if(searchInputFrom){
+        savingTheOrigin.innerHTML = searchInputFrom;
+        openWeather(searchInputFrom);
+    }
+    if(searchInputTo){
+        openWeather(searchInputTo);
+    }
+
+    
+});
+
 
 // ready the function to accept button clicks of nearby cities
-
-
 $('body').on('click', '.city-recommendation', function () {
     var buttonValue = $(this).html();
     console.log("the city is being called")
