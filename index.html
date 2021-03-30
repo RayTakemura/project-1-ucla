@@ -93,14 +93,6 @@
 
     <div class='columns small-8'>
 
-      <!-- recommended cities list input element -->
-      <div id='searchbox' class="grid-x grid-padding-x align-spaced">
-        <p class="bullet">Recommended Nearby Cities:</p>
-        <ul class="menu search-from" id="nearby-cities">
-          
-        </ul>
-      </div>
-
       <!-- history list element -->
       <div class='row' div id="search-history list">
         <div id="historybox" class="grid-x grid-padding-x align-spaced">
@@ -109,6 +101,32 @@
           </ul>
         </div>
       </div>
+
+      <!-- recommended cities list input element -->
+      <div id='city-origin' class="grid-x grid-padding-x align-spaced">
+        <p class="bullet">City that you're traveling from: <span id="origin-city"></span></p> 
+      </div>
+
+      <div class='row' div id="destination-search">
+        <div class='columns small-8'>
+          <div id='destination-searchbox' class="grid-x grid-padding-x align-spaced">
+            <ul class="menu search-from">
+              <li class="bullet">City that you're traveling to:</li>
+              <li><input type="search" placeholder="Search" id="destination-search-input"></li>
+              <li><button type="button" class="button" id="destination-search-button">Search</button></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- recommended cities list input element -->
+      <div id='searchbox' class="grid-x grid-padding-x align-spaced">
+        <p class="bullet">Recommended Nearby Cities:</p>
+        <ul class="menu search-from" id="nearby-cities">
+        </ul>
+      </div>
+
+
 
             <!-- history list element -->
             <div class='row' div id="forecast-histor-list">
