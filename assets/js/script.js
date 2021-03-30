@@ -7,6 +7,7 @@ var nearbyCitiesEl = document.getElementById("nearby-cities");
 var searchInputEl =document.getElementById("search-input");
 var travelPathEl = document.getElementById("travel-path");
 var forecastEl = document.getElementById("forecast-list");
+var savingTheOrigin = document.getElementById("origin-city");
 
 // TODO delete and load via a local storage function
 var travelList = [];
@@ -159,7 +160,7 @@ var addToTheList = function (){
 $(document).ready(
     $("#search-button").on("click",function() {
     var searchInput = $("#search-input").val();
-
+    savingTheOrigin.innerHTML = searchInput;
     openWeather(searchInput);
     })
 );
