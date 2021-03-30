@@ -6,8 +6,7 @@ var searchButtonEl = document.getElementById("searchbutton");
 var nearbyCitiesEl = document.getElementById("nearby-cities");
 var searchInputEl =document.getElementById("search-input");
 var travelPathEl = document.getElementById("travel-path");
-var forecastEl = document.getElementById("forecast-list");
-var savingTheOrigin = document.getElementById("origin-city");
+
 
 // TODO delete and load via a local storage function
 var travelList = [];
@@ -34,9 +33,6 @@ var openWeather = function (cityName) {
                 var latitude = data.city.coord.lat;
                 var longitude = data.city.coord.lon;
                 geoCityDB(latitude, longitude);
-
-                // possibly empty forecast element
-                forecastEl.innerHTML = ""; 
 
                 // for loop to make a forecast of 4 days
                 for (var i = 0; i < 4; i++) {
@@ -85,8 +81,6 @@ var openWeather = function (cityName) {
                     humidityDiv.textContent = "Humidity: " + data.list[convertedIndex].main.humidity + "%";
                     dailyCard.appendChild(humidityDiv);
 
-                    //TODO Need forecast holder element
-                    forecastEl.appendChild(dailyCard);
                 }   
             })
 
@@ -121,8 +115,6 @@ var geoCityDB = function (lat, lon) {
                 //data[i].city for name.
                 //data[i].latitude and data[i].longitude fr their coordinates
 
-                //empty the recommendations before moving on
-                nearbyCitiesEl.innerHTML = "";
                 // limit recommended searches to 3
                 for (var i = 2; i < 5; i++) {
                     //extract city
@@ -156,13 +148,56 @@ var addToTheList = function (){
     console.log("add to the list function called")
 }
 
+/**
+ * Creates a search form. It can prompt for the city to travel 'from' or 'to'.
+ * @param {string} toOrFrom 'to' or 'from' depending on the situation.
+ */
+function createSearchBar(toOrFrom){
+    var $promptEl = $('<li>')
+        .addClass('bullet')
+        .text("City that you're traveling " + toOrFrom + ": ");
+
+    var $inputEl = $('<input>')
+        .attr('type', 'search')
+        .attr('placeholder', 'Search')
+        .attr('id', 'search-input-' + toOrFrom);
+    var $inputContainer = $('<li>');
+    $inputContainer.append($inputEl);
+
+    var $searchButton = $('<button>')
+        .attr('type', 'submit')
+        .addClass('button')
+        .attr('id', 'search-button')
+        .text('Search');
+    var $btnContainer = $('<li>');
+    $btnContainer.append($searchButton);
+
+    var $ulEl = $('<ul>')
+        .addClass('menu search-form');
+    $ulEl.append($promptEl)
+        .append($inputContainer)
+        .append($btnContainer)
+
+    var $searchBoxEl = $('<div>')
+        .addClass('grid-x grid-padding-x align-spaced')
+        .attr('id', 'searchbox')
+        .append($ulEl);
+
+    var $formEl = $('<form>')
+        .append($searchBoxEl);
+
+    $('body').append($formEl);
+        
+}
+
+createSearchBar('from');
+
 
 $("body").submit(function(event) {
     event.preventDefault();
     var searchInputFrom = $("#search-input-from").val();
     var searchInputTo = $('#search-input-to').val();
     if(searchInputFrom){
-        savingTheOrigin.innerHTML = searchInputFrom;
         openWeather(searchInputFrom);
     }
     if(searchInputTo){
@@ -171,6 +206,8 @@ $("body").submit(function(event) {
 
     
 });
+
+
 
 
 // ready the function to accept button clicks of nearby cities
