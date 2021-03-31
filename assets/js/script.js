@@ -2,10 +2,11 @@ $(document).foundation();
 
 var apiKeyOW = "69b9ebd4d042c48c14532ef8693d871e";
 
-var searchButtonEl = document.getElementById("searchbutton");
-var nearbyCitiesEl = document.getElementById("nearby-cities");
 var searchInputEl =document.getElementById("search-input");
 var travelPathEl = document.getElementById("travel-path");
+// false if the second search bar is showing. True if it's showing
+var secondForm = false;
+var recCityDisplay = false;
 
 
 // TODO delete and load via a local storage function
@@ -34,13 +35,17 @@ var openWeather = function (cityName) {
                 var longitude = data.city.coord.lon;
                 geoCityDB(latitude, longitude);
 
-                // swap the searchbar into text
-                swapSearchToText(data.city.name);
+                // commit the following if the second search bar is not on the UI.
+                if (!secondForm){
+                    swapSearchToText(data.city.name);
+                    createSearchBar('to');
+                    secondForm = true;
+                }
                 
                 // for loop to make a forecast of 4 days
                 for (var i = 0; i < 4; i++) {
                     // loop to get 4 days worth of forecast
-                    var convertedIndex = (i*8);
+                    var convertedIndex = (i * 8);
 
                     // creation of each card holder
                     var dailyCard = document.createElement("div");
@@ -103,12 +108,12 @@ var openWeather = function (cityName) {
 var geoCityDB = function (lat, lon) {
     console.log("calling geoCityDB with" + lat + lon)
     fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/locations/" + lat + lon +"/nearbyCities?radius=100&limit=5", {
-	"method": "GET",
-	"headers": {
-		"x-rapidapi-key": "b86f90e0b2msh50777cebadf2bf8p18ae10jsn2ea6375c04a8",
-		"x-rapidapi-host": "wft-geo-db.p.rapidapi.com"
-	}
-})
+        "method": "GET",
+        "headers": {
+            "x-rapidapi-key": "b86f90e0b2msh50777cebadf2bf8p18ae10jsn2ea6375c04a8",
+            "x-rapidapi-host": "wft-geo-db.p.rapidapi.com"
+        }
+    })
     .then(function(response) {
         if (response.ok) {
             response.json().then(function(data) {
@@ -118,6 +123,15 @@ var geoCityDB = function (lat, lon) {
                 //data[i].city for name.
                 //data[i].latitude and data[i].longitude fr their coordinates
 
+                if(recCityDisplay){
+                    $('.city-recommendation').remove();
+                } 
+                var $cityRecSpanEl = $('<span>')
+                    .text('Recommended cities: ')
+                    .addClass('city-recommendation bullet cell small-2');
+                $('.nearby-cities').append($cityRecSpanEl);
+                
+                
                 // limit recommended searches to 3
                 for (var i = 2; i < 5; i++) {
                     //extract city
@@ -129,16 +143,17 @@ var geoCityDB = function (lat, lon) {
                     var CityRecLong = data.data[i].longitude;
 
                     console.log("lat is " + CityRecLat + " and lon is " + CityRecLong)
-
+                    
                     
                     // creating button element that needs to be inserted into the search history list
-                    var cityRecButtonEl = document.createElement("a");
-                    cityRecButtonEl.className = "button city-recommendation";
-                    cityRecButtonEl.innerHTML = cityRec;
-
-                    nearbyCitiesEl.appendChild(cityRecButtonEl);
+                    var $cityRecButtonEl = $('<a>')
+                        .addClass('button radius info city-recommendation bullet cell small-1')
+                        .attr('href', '#')
+                        .text(cityRec);
+                    
+                    $('.nearby-cities').append($cityRecButtonEl);
                 }
-
+                recCityDisplay = true;
             })
         }
     })
@@ -163,14 +178,13 @@ function createSearchBar(toOrFrom){
     var $inputEl = $('<input>')
         .attr('type', 'search')
         .attr('placeholder', 'Search')
-        .attr('id', 'search-input-' + toOrFrom)
-        .addClass('swappable');
+        .attr('id', 'search-input-' + toOrFrom);
     var $inputContainer = $('<li>');
     $inputContainer.append($inputEl);
 
     var $searchButton = $('<button>')
         .attr('type', 'submit')
-        .addClass('button swappable')
+        .addClass('button bullet')
         .attr('id', 'search-button')
         .text('Search');
     var $btnContainer = $('<li>');
@@ -190,19 +204,32 @@ function createSearchBar(toOrFrom){
     var $formEl = $('<form>')
         .append($searchBoxEl);
 
-    $('.trav-from').append($formEl);
+    if (toOrFrom === 'from'){
+        $inputEl.addClass('swappable');
+        $searchButton.addClass('swappable');
+        $('.trav-from').append($formEl);
+    } else {
+        $('.trav-to').append($formEl);
+    }
+    
         
 }
 
+/**
+ * Swaps the first search bar into text form.
+ * @param {string} cityName The name of the city in correct capitalization.
+ */
 function swapSearchToText (cityName){
     $('.swappable').remove();
     var $cityNameEl = $('<li>')
         .text(cityName)
         .addClass('bullet');
     $('ul').append($cityNameEl);
-    
 }
 
+
+
+// When the web is loaded, create a search bar (the search bar will be deleted later)
 createSearchBar('from');
 
 
@@ -216,8 +243,6 @@ $("body").submit(function(event) {
     if(searchInputTo){
         openWeather(searchInputTo);
     }
-
-    
 });
 
 // ready the function to accept button clicks of nearby cities
