@@ -34,6 +34,9 @@ var openWeather = function (cityName) {
                 var longitude = data.city.coord.lon;
                 geoCityDB(latitude, longitude);
 
+                // swap the searchbar into text
+                swapSearchToText(data.city.name);
+                
                 // for loop to make a forecast of 4 days
                 for (var i = 0; i < 4; i++) {
                     // loop to get 4 days worth of forecast
@@ -80,7 +83,7 @@ var openWeather = function (cityName) {
                     var humidityDiv = document.createElement("div");
                     humidityDiv.textContent = "Humidity: " + data.list[convertedIndex].main.humidity + "%";
                     dailyCard.appendChild(humidityDiv);
-
+                    
                 }   
             })
 
@@ -160,13 +163,14 @@ function createSearchBar(toOrFrom){
     var $inputEl = $('<input>')
         .attr('type', 'search')
         .attr('placeholder', 'Search')
-        .attr('id', 'search-input-' + toOrFrom);
+        .attr('id', 'search-input-' + toOrFrom)
+        .addClass('swappable');
     var $inputContainer = $('<li>');
     $inputContainer.append($inputEl);
 
     var $searchButton = $('<button>')
         .attr('type', 'submit')
-        .addClass('button')
+        .addClass('button swappable')
         .attr('id', 'search-button')
         .text('Search');
     var $btnContainer = $('<li>');
@@ -176,7 +180,7 @@ function createSearchBar(toOrFrom){
         .addClass('menu search-form');
     $ulEl.append($promptEl)
         .append($inputContainer)
-        .append($btnContainer)
+        .append($btnContainer);
 
     var $searchBoxEl = $('<div>')
         .addClass('grid-x grid-padding-x align-spaced')
@@ -186,8 +190,17 @@ function createSearchBar(toOrFrom){
     var $formEl = $('<form>')
         .append($searchBoxEl);
 
-    $('body').append($formEl);
+    $('.trav-from').append($formEl);
         
+}
+
+function swapSearchToText (cityName){
+    $('.swappable').remove();
+    var $cityNameEl = $('<li>')
+        .text(cityName)
+        .addClass('bullet');
+    $('ul').append($cityNameEl);
+    
 }
 
 createSearchBar('from');
@@ -206,9 +219,6 @@ $("body").submit(function(event) {
 
     
 });
-
-
-
 
 // ready the function to accept button clicks of nearby cities
 $('body').on('click', '.city-recommendation', function () {
