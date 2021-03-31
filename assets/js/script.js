@@ -8,9 +8,37 @@ var travelPathEl = document.getElementById("travel-path");
 var secondForm = false;
 var recCityDisplay = false;
 
+// data of the cities retrieved from fetched data
+var citiesData = {
+    cityFrom: {
+        name: '',
+        noSpaceName: '',
+        lon: 0,
+        lat: 0,
+        weather: {
+            weathDate: [],
+            icon: [],
+            temp: [],
+            humidity: []
+        },
+        recCities: []
+    },
+    cityTo: {
+        name: '',
+        noSpaceName: '',
+        lon: 0,
+        lat: 0,
+        weather: {
+            weathDate: [],
+            icon: [],
+            temp: [],
+            humidity: []
+        },
+        recCities: []
+    }
+};
 
-// TODO delete and load via a local storage function
-var travelList = [];
+var travelList = {};
 
 var openWeather = function (cityName) {
 
@@ -37,6 +65,8 @@ var openWeather = function (cityName) {
 
                 // commit the following if the second search bar is not on the UI.
                 if (!secondForm){
+                    citiesData.cityFrom.name = data.city.name;
+                    console.log(citiesData);
                     swapSearchToText(data.city.name);
                     createSearchBar('to');
                     secondForm = true;
@@ -105,6 +135,66 @@ var openWeather = function (cityName) {
 
 }
 
+/**
+ * Fetch weather data from openWeather API, and append all data into citiesData object.
+ * Depending on whether this function was called to append data for the city to travel from or to, 
+ * it changes the directory of where the data is going to be stored.
+ * @param {string} cityName The name of the city that was entered by the user
+ * @param {string} toOrFrom The function must be called with 'to' or 'from' to correctly store data in the correct object.
+ */
+var fetchOpenWeather = function (cityName, toOrFrom) {
+    // handling cities with spaces in their name
+    var noSpaceCity = cityName.replace(" ", "+");
+    var OWUrl ="https://api.openweathermap.org/data/2.5/forecast?q=" + noSpaceCity + "&appid=" + apiKeyOW + "&units=imperial";
+    fetch(OWUrl)
+        .then(function(response) {
+            // if statement for good and bad responses
+            if (response.ok) {
+                response.json().then(function(data) {
+                    // achieve weather data for the cityFrom data
+                    if (toOrFrom === 'from'){
+                        //get city's name, latitude, and longitude
+                        citiesData.cityFrom.name = data.city.name;
+                        citiesData.cityFrom.lat = data.city.coord.lat;
+                        citiesData.cityFrom.lon = data.city.coord.lon;
+
+                        //get city's 4 day forecast data (date, icon, temp, and humidity)
+                        for (var i = 0; i < 4; i++) {
+                            var convertedIndex = (i * 8);
+                            citiesData.cityFrom.weather.weathDate.push(moment().add(i, "days").format("L"));
+                            citiesData.cityFrom.weather.icon.push("http://openweathermap.org/img/w/" + data.list[convertedIndex].weather[0].icon + ".png");
+                            citiesData.cityFrom.weather.temp.push(data.list[convertedIndex].main.temp);
+                            citiesData.cityFrom.weather.humidity.push(data.list[convertedIndex].main.humidity);
+                        }  
+                    } else if (toOrFrom === 'to'){  // achieve weather data for the cityTo data 
+                        citiesData.cityTo.name = data.city.name;
+                        citiesData.cityTo.lat = data.city.coord.lat;
+                        citiesData.cityTo.lon = data.city.coord.lon;
+
+                        for (var i = 0; i < 4; i++) {
+                            var convertedIndex = (i * 8);
+                            citiesData.cityTo.weather.weathDate.push(moment().add(i, "days").format("L"));
+                            citiesData.cityTo.weather.icon.push("http://openweathermap.org/img/w/" + data.list[convertedIndex].weather[0].icon + ".png");
+                            citiesData.cityTo.weather.temp.push(data.list[convertedIndex].main.temp);
+                            citiesData.cityTo.weather.humidity.push(data.list[convertedIndex].main.humidity);
+                        }
+                    }
+                })
+
+            // error handling for bad responses
+            } else {
+                alert("Error: " + response.status);
+            }
+        })
+    // catch error if there is an exception
+    .catch(function(error) {
+        // catch() getting chained onto the end of the then
+        console.log("logic error in featchOpenWeather function :(")
+    });
+}
+
+
+
 var geoCityDB = function (lat, lon) {
     console.log("calling geoCityDB with" + lat + lon)
     fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/locations/" + lat + lon +"/nearbyCities?radius=100&limit=5", {
@@ -162,6 +252,36 @@ var geoCityDB = function (lat, lon) {
     });
 }
 
+
+var fetchGeoCityDB = function (lat, lon, toOrFrom) {
+    console.log("calling geoCityDB with" + lat + lon)
+    fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/locations/" + lat + lon +"/nearbyCities?radius=100&limit=5", {
+        "method": "GET",
+        "headers": {
+            "x-rapidapi-key": "b86f90e0b2msh50777cebadf2bf8p18ae10jsn2ea6375c04a8",
+            "x-rapidapi-host": "wft-geo-db.p.rapidapi.com"
+        }
+    })
+    .then(function(response) {
+        if (response.ok) {
+            response.json().then(function(data) {
+                if (toOrFrom === 'from'){
+                    for (var i = 2; i < 5; i++){// limit recommended searches to 3
+                        citiesData.cityFrom.recCities.push(data.data[i].city);
+                    }
+                } else if (toOrFrom === 'to') {
+                    for (var i = 2; i < 5; i++){// limit recommended searches to 3
+                        citiesData.cityTo.recCities.push(data.data[i].city);
+                    }
+                }
+            })
+        }
+    })
+    .catch(err => {
+        console.error(err);
+    });
+}
+
 var addToTheList = function (){
     console.log("add to the list function called")
 }
@@ -211,8 +331,6 @@ function createSearchBar(toOrFrom){
     } else {
         $('.trav-to').append($formEl);
     }
-    
-        
 }
 
 /**
@@ -236,12 +354,8 @@ createSearchBar('from');
 $("body").submit(function(event) {
     event.preventDefault();
     var searchInputFrom = $("#search-input-from").val();
-    var searchInputTo = $('#search-input-to').val();
     if(searchInputFrom){
         openWeather(searchInputFrom);
-    }
-    if(searchInputTo){
-        openWeather(searchInputTo);
     }
 });
 
