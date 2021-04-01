@@ -50,7 +50,7 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
                                 var iconURL = "http://openweathermap.org/img/w/" + data.list[convertedIndex].weather[0].icon + ".png";
                                 var tempStr = data.list[convertedIndex].main.temp;
                                 var humidityStr = data.list[convertedIndex].main.humidity;
-                                var $weatherCard = createWeatherCard (dateString, iconURL, tempStr, humidityStr, false)
+                                var $weatherCard = createWeatherCard (dateString, iconURL, tempStr, humidityStr, false);
                                 $('.w-from').append($weatherCard);
                             }  
 
@@ -61,8 +61,6 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
 
                             $yelpTitle = $('<h2>').text('Recommended Restaurants:');
                             $('.y-title').append($yelpTitle);
-
-
 
                         } else if (toOrFrom === 'to'){  // achieve weather data for the cityTo data 
 
@@ -128,11 +126,11 @@ var fetchGeoCityDB = function (lat, lon) {
                 }
                 var $cityRecSpanEl = $('<span>')
                     .text('Recommended cities: ')
-                    .addClass('city-recommendation bullet cell small-2');
+                    .addClass('bullet cell small-2');
                 $('.nearby-cities').append($cityRecSpanEl);
                 for (var i = 0; i < 3; i++){
                     var $cityRecButtonEl = $('<a>')
-                        .addClass('button radius info city-recommendation bullet cell small-1')
+                        .addClass('button radius info city-recommendation bullet cell small-1 rounded')
                         .text(recCities[i]);
 
                     $('.nearby-cities').append($cityRecButtonEl);
@@ -161,13 +159,13 @@ function fetchYelp(cityName, toOrFrom){
         .then(result => {
             $restaurantListTitle = $('<h3>').text('Restaurants in ' + cityName + ':');
             if (toOrFrom === 'from' ){
+                $('.yelp-list-title-from').append($restaurantListTitle);
                 for(var i = 0; i < 4; i++){
-                    $('.yelp-list-title-from').append($restaurantListTitle);
                     $('.y-' + toOrFrom).append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, toOrFrom === 'to'));
                 }
             } else if(toOrFrom === 'to') {
+                $('.yelp-list-title-to').append($restaurantListTitle);
                 for(var i = 0; i < 4; i++){
-                    $('.yelp-list-title-to').append($restaurantListTitle);
                     $('.y-' + toOrFrom).append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, toOrFrom === 'to'));
                 }
             } else {
@@ -244,29 +242,37 @@ function swapSearchToText (cityName){
 
 /**
  * 
- * @param {string} dateString 
- * @param {string} iconURL 
- * @param {string} tempStr 
- * @param {string} humidityStr 
+ * @param {string} dateString the date of the forecast
+ * @param {string} iconURL the URL of the icon from openWeather
+ * @param {string} tempStr the temperature in Fahrenheit
+ * @param {string} humidityStr the humidity value in percent 
  * @param {boolean} removable true if the card should be removable by user action. False if it shouldn't be removed. 
  * @returns 
  */
 function createWeatherCard (dateString, iconURL, tempStr, humidityStr, removable){
     $date = $('<h4>').text(dateString);
     $icon = $('<img>').attr('src', iconURL);
+
+    
     $temp = $('<span>').text("Temp: " + tempStr + "°F");
+    $tempRow = $('<div>').addClass('row');
+    $tempRow.append($temp);
+
     $humidity = $('<span>').text("Humidity: " + humidityStr + "%")
+    $humidRow = $('<div>').addClass('row');
+    $humidRow.append($humidity);
+
     $cardSection = $('<div>')
         .addClass('card-section')
         .append($date)
         .append($icon)
-        .append($temp)
-        .append($humidity);
+        .append($tempRow)
+        .append($humidRow);
     $card = $('<div>')
-        .addClass('card')
+        .addClass('card cell small-2 rounded w-card')
         .append($cardSection);
     if (removable){
-        $card.addClass('removable');
+        $card.addClass('removable ');
     }
     return $card;
 
@@ -281,7 +287,7 @@ function createYelpCard (name, imgURL, removable){
         .append($name)
         .append($img)
     $card = $('<div>')
-        .addClass('card')
+        .addClass('card cell small-2 rounded yelp-card')
         .append($cardSection);
     if (removable){
         $card.addClass('removable');
