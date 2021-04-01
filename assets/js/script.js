@@ -6,7 +6,6 @@ var searchInputEl =document.getElementById("search-input");
 var travelPathEl = document.getElementById("travel-path");
 // false if the second search bar is showing. True if it's showing
 var secondForm = false;
-var recCityDisplay = false;
 
 
 // data of the cities retrieved from fetched data
@@ -22,7 +21,11 @@ var citiesData = {
             temp: [],
             humidity: []
         },
-        recCities: []
+        recCities: [],
+        restaurants: {
+            restNames: [],
+            restImgs:[]
+        }
     },
     cityTo: {
         name: '',
@@ -35,7 +38,11 @@ var citiesData = {
             temp: [],
             humidity: []
         },
-        recCities: []
+        recCities: [],
+        restaurants: {
+            restNames: [],
+            restImgs:[]
+        }
     }
 };
 
@@ -78,7 +85,7 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
                             swapSearchToText(citiesData.cityFrom.name);
                             createSearchBar('to');
                             fetchGeoCityDB(citiesData.cityFrom.lat, citiesData.cityFrom.lon, 'from');
-                            
+                            fetchYelp(citiesData.cityFrom.name, 'from');
 
                             for (var i = 0; i < 4; i++) {
                                 var dateString = citiesData.cityFrom.weather.weathDate[i];
@@ -111,6 +118,7 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
                                 var humidityStr = citiesData.cityTo.weather.humidity[i];
                                 $('.w-to').append(createWeatherCard (dateString, iconURL, tempStr, humidityStr, false));
                             }
+                            fetchYelp(citiesData.cityTo.name, 'to');
                             
                         } else {
                             console.log('make sure to enter "to" or "from" when you call fetchOpenWeather function!')
@@ -132,7 +140,12 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
 }
 
 
-
+/**
+ * Fetches a list of nearby cities from nearby cities by using geoCityDB's API.
+ * @param {number} lat The latitude of the city 
+ * @param {number} lon The longitude of the city
+ * @param {string} toOrFrom 'to' or 'from' depending on whether the user searched for the city that they are traveling from or to.
+ */
 var fetchGeoCityDB = function (lat, lon, toOrFrom) {
     console.log("calling geoCityDB with" + lat + lon)
     fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/locations/" + lat + lon +"/nearbyCities?radius=100&limit=5", {
@@ -175,6 +188,37 @@ var fetchGeoCityDB = function (lat, lon, toOrFrom) {
     .catch(err => {
         console.error(err);
     });
+}
+
+
+function fetchYelp(cityName, toOrFrom){
+    var myHeaders = new Headers();
+    myHeaders.append("Authorization", "Bearer 9L0XxHNnQJiXPX5w0XuGqhOYZXx0CwmKc9sOc00ApKSApzvm0Etd3WpzKJL4T3zDRv0BotBJrUlPcHx140lZirnebjVbI45MD6KPNziXR1s1hXt2g51db7EwOhBdYHYx");
+    
+    var requestOptions = {
+      method: 'GET',
+      headers: myHeaders,
+      redirect: 'follow'
+    };
+    
+    fetch("https://secure-shelf-42257.herokuapp.com/https://api.yelp.com/v3/businesses/search?location=" + cityName, requestOptions)
+      .then(response => response.json())
+      .then(result => {
+          console.log(result);
+          if (toOrFrom === 'from'){
+            for(var i = 0; i < 4; i++){
+                $('.y-from').append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, false));
+            }
+          } else if (toOrFrom === 'to'){
+            for(var i = 0; i < 4; i++){
+                $('.y-to').append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, true));
+            }
+          }
+          
+
+
+      })
+      .catch(error => console.log('error', error));
 }
 
 var addToTheList = function (){
@@ -242,7 +286,15 @@ function swapSearchToText (cityName){
     $('ul').append($cityNameEl);
 }
 
-
+/**
+ * 
+ * @param {*} dateString 
+ * @param {*} iconURL 
+ * @param {*} tempStr 
+ * @param {*} humidityStr 
+ * @param {*} removable 
+ * @returns 
+ */
 function createWeatherCard (dateString, iconURL, tempStr, humidityStr, removable){
     $date = $('<h4>').text(dateString);
     $icon = $('<img>').attr('src', iconURL);
@@ -264,16 +316,30 @@ function createWeatherCard (dateString, iconURL, tempStr, humidityStr, removable
 
 }
 
+
+
+function createYelpCard (name, imgURL, removable){
+    $name = $('<h4>').text(name);
+    $img = $('<img>').attr('src', imgURL).attr('width', '150px');
+    $cardSection = $('<div>')
+        .addClass('card-section')
+        .append($name)
+        .append($img)
+    $card = $('<div>')
+        .addClass('card')
+        .append($cardSection);
+    if (removable){
+        $card.addClass('removable');
+    }
+    return $card;
+}
+
 // When the web is loaded, create a search bar (the search bar will be deleted later)
 createSearchBar('from');
 
 
 $("body").submit(function(event) {
     event.preventDefault();
-    // var searchInputFrom = $("#search-input-from").val();
-    // if(searchInputFrom){
-    //     openWeather(searchInputFrom);
-    // }
     if(event.target.matches('#from')){
         var searchInput = $('#search-input-from').val();
         fetchOpenWeather(searchInput,'from');
@@ -288,7 +354,7 @@ $("body").submit(function(event) {
 // ready the function to accept button clicks of nearby cities
 $('body').on('click', '.city-recommendation', function () {
     var buttonValue = $(this).html();
-    console.log("the city is being called")
+    console.log("the city is being called");
     console.log(buttonValue);
 
     openWeather(buttonValue);
