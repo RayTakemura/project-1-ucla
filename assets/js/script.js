@@ -6,134 +6,9 @@ var searchInputEl =document.getElementById("search-input");
 var travelPathEl = document.getElementById("travel-path");
 // false if the second search bar is showing. True if it's showing
 var secondForm = false;
-var recCityDisplay = false;
-
-// data of the cities retrieved from fetched data
-var citiesData = {
-    cityFrom: {
-        name: '',
-        noSpaceName: '',
-        lon: 0,
-        lat: 0,
-        weather: {
-            weathDate: [],
-            icon: [],
-            temp: [],
-            humidity: []
-        },
-        recCities: []
-    },
-    cityTo: {
-        name: '',
-        noSpaceName: '',
-        lon: 0,
-        lat: 0,
-        weather: {
-            weathDate: [],
-            icon: [],
-            temp: [],
-            humidity: []
-        },
-        recCities: []
-    }
-};
 
 var travelList = {};
 
-var openWeather = function (cityName) {
-
-    // handling cities with spaces in their name
-    var noSpaceCity = cityName.replace(" ", "+");
-    console.log(noSpaceCity);
-
-    var OWUrl ="https://api.openweathermap.org/data/2.5/forecast?q=" + noSpaceCity + "&appid=" + apiKeyOW + "&units=imperial";
-    
-    fetch(OWUrl).then(function(response) {
-        // if statement for good and bad responses
-        if (response.ok) {
-
-            response.json().then(function(data) {
-                // uncomment below if wanting to clear the forcast after each city is chosen
-                // fiveDayForecastEl.innerHTML = "";
-                console.log("OW URL function")
-                console.log(data);
-
-                // calling open city DB API
-                var latitude = data.city.coord.lat;
-                var longitude = data.city.coord.lon;
-                geoCityDB(latitude, longitude);
-
-                // commit the following if the second search bar is not on the UI.
-                if (!secondForm){
-                    citiesData.cityFrom.name = data.city.name;
-                    console.log(citiesData);
-                    swapSearchToText(data.city.name);
-                    createSearchBar('to');
-                    secondForm = true;
-                }
-                
-                // for loop to make a forecast of 4 days
-                for (var i = 0; i < 4; i++) {
-                    // loop to get 4 days worth of forecast
-                    var convertedIndex = (i * 8);
-
-                    // creation of each card holder
-                    var dailyCard = document.createElement("div");
-
-                    // TODO: Structure based on foundation 
-                    dailyCard.className = "cell small-2 primary day-forecast";
-
-                    // h4 date header
-                    var dateEl = document.createElement("h4");
-                    var dateReference = moment().add(i, "days").format("L");
-                    dateEl.textContent = dateReference;
-                    dailyCard.appendChild(dateEl);
-
-                    // get weather for relevant icon
-                    var forecastWeather = data.list[convertedIndex].weather[0].main;
-                    // icons for the cards
-                    var iconDiv = document.createElement("div");
-                    if (forecastWeather === "Clear") {
-                        iconDiv.innerHTML = "<i class='fas fa-sun'></i>"
-                    } else if (forecastWeather === "Clouds") {
-                        iconDiv.innerHTML = "<i class='fas fa-cloud'></i>"
-                    } else if (forecastWeather === "Rain" || forecastWeather === "Drizzle") {
-                        iconDiv.innerHTML = "<i class='fas fa-cloud-rain'></i>"
-                    } else if (forecastWeather === "Thunderstorm") {
-                        iconDiv.innerHTML = "<i class='fas fa-bolt'></i>"
-                    } else if (forecastWeather === "Snow") {
-                        iconDiv.innerHTML = "<i class='far fa-snowflake'></i>"
-                    } else {
-                        iconDiv.innerHTML = "<i class='fas fa-times-circle'></i>"
-                    }
-                    // append Icon to the card
-                    dailyCard.appendChild(iconDiv);
-
-                    //temperature div
-                    var tempDiv = document.createElement("div");
-                    tempDiv.textContent = "Temp: " + data.list[convertedIndex].main.temp + "°F";
-                    dailyCard.appendChild(tempDiv);
-
-                    //humidity
-                    var humidityDiv = document.createElement("div");
-                    humidityDiv.textContent = "Humidity: " + data.list[convertedIndex].main.humidity + "%";
-                    dailyCard.appendChild(humidityDiv);
-                    
-                }   
-            })
-
-        // error handling for bad responses
-        } else {
-            alert("Error: " + response.status);
-        }
-    })
-    // additional error catching
-    .catch(function(error) {
-        // catch() getting chained onto the end of the then
-        alert("Connection Error")
-    });
-
-}
 
 /**
  * Fetch weather data from openWeather API, and append all data into citiesData object.
@@ -150,36 +25,52 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
         .then(function(response) {
             // if statement for good and bad responses
             if (response.ok) {
-                response.json().then(function(data) {
-                    // achieve weather data for the cityFrom data
-                    if (toOrFrom === 'from'){
-                        //get city's name, latitude, and longitude
-                        citiesData.cityFrom.name = data.city.name;
-                        citiesData.cityFrom.lat = data.city.coord.lat;
-                        citiesData.cityFrom.lon = data.city.coord.lon;
+                response.json()
+                    .then(function(data) {
 
-                        //get city's 4 day forecast data (date, icon, temp, and humidity)
-                        for (var i = 0; i < 4; i++) {
-                            var convertedIndex = (i * 8);
-                            citiesData.cityFrom.weather.weathDate.push(moment().add(i, "days").format("L"));
-                            citiesData.cityFrom.weather.icon.push("http://openweathermap.org/img/w/" + data.list[convertedIndex].weather[0].icon + ".png");
-                            citiesData.cityFrom.weather.temp.push(data.list[convertedIndex].main.temp);
-                            citiesData.cityFrom.weather.humidity.push(data.list[convertedIndex].main.humidity);
-                        }  
-                    } else if (toOrFrom === 'to'){  // achieve weather data for the cityTo data 
-                        citiesData.cityTo.name = data.city.name;
-                        citiesData.cityTo.lat = data.city.coord.lat;
-                        citiesData.cityTo.lon = data.city.coord.lon;
+                        var cityName = data.city.name;
+                        var lat = data.city.coord.lat;
+                        var lon = data.city.coord.lon;
 
-                        for (var i = 0; i < 4; i++) {
-                            var convertedIndex = (i * 8);
-                            citiesData.cityTo.weather.weathDate.push(moment().add(i, "days").format("L"));
-                            citiesData.cityTo.weather.icon.push("http://openweathermap.org/img/w/" + data.list[convertedIndex].weather[0].icon + ".png");
-                            citiesData.cityTo.weather.temp.push(data.list[convertedIndex].main.temp);
-                            citiesData.cityTo.weather.humidity.push(data.list[convertedIndex].main.humidity);
+                        // achieve weather data for the cityFrom data
+                        if (toOrFrom === 'from'){
+
+                            // create weather cards
+                            for (var i = 0; i < 4; i++) {
+                                var convertedIndex = (i * 8);
+                                var dateString = moment().add(i, "days").format("L");
+                                var iconURL = "http://openweathermap.org/img/w/" + data.list[convertedIndex].weather[0].icon + ".png";
+                                var tempStr = data.list[convertedIndex].main.temp;
+                                var humidityStr = data.list[convertedIndex].main.humidity;
+                                var $weatherCard = createWeatherCard (dateString, iconURL, tempStr, humidityStr, false)
+                                $('.w-from').append($weatherCard);
+                            }  
+
+                            swapSearchToText(cityName);
+                            createSearchBar('to');
+                            fetchGeoCityDB(lat, lon, 'from');
+                            fetchYelp(cityName, 'from');
+
+                        } else if (toOrFrom === 'to'){  // achieve weather data for the cityTo data 
+
+                            for (var i = 0; i < 4; i++) {
+                                var convertedIndex = (i * 8);
+                                var dateString = moment().add(i, "days").format("L");
+                                var iconURL = "http://openweathermap.org/img/w/" + data.list[convertedIndex].weather[0].icon + ".png";
+                                var tempStr = data.list[convertedIndex].main.temp;
+                                var humidityStr = data.list[convertedIndex].main.humidity;
+                                var $watherCard = createWeatherCard (dateString, iconURL, tempStr, humidityStr, true)
+                                $('.w-to').append($watherCard);
+                            }
+
+                            fetchYelp(cityName, 'to');
+                            
+                        } else {
+                            console.log('make sure to enter "to" or "from" when you call fetchOpenWeather function!')
+                            return;
                         }
-                    }
-                })
+                        
+                    })
 
             // error handling for bad responses
             } else {
@@ -194,8 +85,12 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
 }
 
 
-
-var geoCityDB = function (lat, lon) {
+/**
+ * Fetches a list of nearby cities from nearby cities by using geoCityDB's API.
+ * @param {number} lat The latitude of the city 
+ * @param {number} lon The longitude of the city
+ */
+var fetchGeoCityDB = function (lat, lon) {
     console.log("calling geoCityDB with" + lat + lon)
     fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/locations/" + lat + lon +"/nearbyCities?radius=100&limit=5", {
         "method": "GET",
@@ -207,43 +102,24 @@ var geoCityDB = function (lat, lon) {
     .then(function(response) {
         if (response.ok) {
             response.json().then(function(data) {
-                console.log(data);
-
-                // extract each nearby city 
-                //data[i].city for name.
-                //data[i].latitude and data[i].longitude fr their coordinates
-
-                if(recCityDisplay){
-                    $('.city-recommendation').remove();
-                } 
+                var recCities = [];
+                
+                for (var i = 2; i < 5; i++){// limit recommended searches to 3
+                    console.log(data.data[i].city);
+                    // citiesData.cityFrom.recCities.push(data.data[i].city);
+                    recCities.push(data.data[i].city);
+                }
                 var $cityRecSpanEl = $('<span>')
                     .text('Recommended cities: ')
                     .addClass('city-recommendation bullet cell small-2');
                 $('.nearby-cities').append($cityRecSpanEl);
-                
-                
-                // limit recommended searches to 3
-                for (var i = 2; i < 5; i++) {
-                    //extract city
-                    var cityRec = data.data[i].city;
-                    console.log(cityRec);
-
-                    //extract coordinates from the data
-                    var CityRecLat = data.data[i].latitude;
-                    var CityRecLong = data.data[i].longitude;
-
-                    console.log("lat is " + CityRecLat + " and lon is " + CityRecLong)
-                    
-                    
-                    // creating button element that needs to be inserted into the search history list
+                for (var i = 0; i < 3; i++){
                     var $cityRecButtonEl = $('<a>')
                         .addClass('button radius info city-recommendation bullet cell small-1')
-                        .attr('href', '#')
-                        .text(cityRec);
-                    
+                        .text(recCities[i]);
+
                     $('.nearby-cities').append($cityRecButtonEl);
                 }
-                recCityDisplay = true;
             })
         }
     })
@@ -253,33 +129,29 @@ var geoCityDB = function (lat, lon) {
 }
 
 
-var fetchGeoCityDB = function (lat, lon, toOrFrom) {
-    console.log("calling geoCityDB with" + lat + lon)
-    fetch("https://wft-geo-db.p.rapidapi.com/v1/geo/locations/" + lat + lon +"/nearbyCities?radius=100&limit=5", {
-        "method": "GET",
-        "headers": {
-            "x-rapidapi-key": "b86f90e0b2msh50777cebadf2bf8p18ae10jsn2ea6375c04a8",
-            "x-rapidapi-host": "wft-geo-db.p.rapidapi.com"
-        }
-    })
-    .then(function(response) {
-        if (response.ok) {
-            response.json().then(function(data) {
-                if (toOrFrom === 'from'){
-                    for (var i = 2; i < 5; i++){// limit recommended searches to 3
-                        citiesData.cityFrom.recCities.push(data.data[i].city);
-                    }
-                } else if (toOrFrom === 'to') {
-                    for (var i = 2; i < 5; i++){// limit recommended searches to 3
-                        citiesData.cityTo.recCities.push(data.data[i].city);
-                    }
-                }
-            })
-        }
-    })
-    .catch(err => {
-        console.error(err);
-    });
+function fetchYelp(cityName, toOrFrom){
+    var myHeaders = new Headers();
+    myHeaders.append("Authorization", "Bearer 9L0XxHNnQJiXPX5w0XuGqhOYZXx0CwmKc9sOc00ApKSApzvm0Etd3WpzKJL4T3zDRv0BotBJrUlPcHx140lZirnebjVbI45MD6KPNziXR1s1hXt2g51db7EwOhBdYHYx");
+    
+    var requestOptions = {
+      method: 'GET',
+      headers: myHeaders,
+      redirect: 'follow'
+    };
+    
+    fetch("https://secure-shelf-42257.herokuapp.com/https://api.yelp.com/v3/businesses/search?location=" + cityName, requestOptions)
+      .then(response => response.json())
+      .then(result => {
+          console.log(result);
+          if (toOrFrom === 'from' || toOrFrom === 'to'){
+            for(var i = 0; i < 4; i++){
+                $('.y-' + toOrFrom).append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, toOrFrom === 'to'));
+            }
+          } else {
+              console.log('you called the fetchYelp function incorrectly!')
+          }
+      })
+      .catch(error => console.log('error', error));
 }
 
 var addToTheList = function (){
@@ -328,8 +200,10 @@ function createSearchBar(toOrFrom){
         $inputEl.addClass('swappable');
         $searchButton.addClass('swappable');
         $('.trav-from').append($formEl);
+        $formEl.attr('id','from');
     } else {
         $('.trav-to').append($formEl);
+        $formEl.attr('id','to');
     }
 }
 
@@ -345,7 +219,52 @@ function swapSearchToText (cityName){
     $('ul').append($cityNameEl);
 }
 
+/**
+ * 
+ * @param {*} dateString 
+ * @param {*} iconURL 
+ * @param {*} tempStr 
+ * @param {*} humidityStr 
+ * @param {*} removable 
+ * @returns 
+ */
+function createWeatherCard (dateString, iconURL, tempStr, humidityStr, removable){
+    $date = $('<h4>').text(dateString);
+    $icon = $('<img>').attr('src', iconURL);
+    $temp = $('<span>').text("Temp: " + tempStr + "°F");
+    $humidity = $('<span>').text("Humidity: " + humidityStr + "%")
+    $cardSection = $('<div>')
+        .addClass('card-section')
+        .append($date)
+        .append($icon)
+        .append($temp)
+        .append($humidity);
+    $card = $('<div>')
+        .addClass('card')
+        .append($cardSection);
+    if (removable){
+        $card.addClass('removable');
+    }
+    return $card;
 
+}
+
+
+function createYelpCard (name, imgURL, removable){
+    $name = $('<h4>').text(name);
+    $img = $('<img>').attr('src', imgURL).attr('width', '150px');
+    $cardSection = $('<div>')
+        .addClass('card-section')
+        .append($name)
+        .append($img)
+    $card = $('<div>')
+        .addClass('card')
+        .append($cardSection);
+    if (removable){
+        $card.addClass('removable');
+    }
+    return $card;
+}
 
 // When the web is loaded, create a search bar (the search bar will be deleted later)
 createSearchBar('from');
@@ -353,16 +272,20 @@ createSearchBar('from');
 
 $("body").submit(function(event) {
     event.preventDefault();
-    var searchInputFrom = $("#search-input-from").val();
-    if(searchInputFrom){
-        openWeather(searchInputFrom);
+    if(event.target.matches('#from')){
+        var searchInput = $('#search-input-from').val();
+        fetchOpenWeather(searchInput,'from');
+        
+    }else if(event.target.matches('#to')){
+        var searchInput = $('#search-input-to').val();
+        fetchOpenWeather(searchInput,'to');
     }
 });
 
 // ready the function to accept button clicks of nearby cities
 $('body').on('click', '.city-recommendation', function () {
     var buttonValue = $(this).html();
-    console.log("the city is being called")
+    console.log("the city is being called");
     console.log(buttonValue);
 
     openWeather(buttonValue);
