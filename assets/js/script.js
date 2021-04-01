@@ -35,6 +35,14 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
                         // achieve weather data for the cityFrom data
                         if (toOrFrom === 'from'){
 
+                            //create section title for weather
+                            $weatherTitle = $('<h2>').text('Weather:');
+                            $('.w-title').append($weatherTitle);
+
+                            //create weather forecast title
+                            $forecastTitle = $('<h3>').text('4-day forecast of ' + cityName + ':');
+                            $('.forecast-title-from').append($forecastTitle);
+
                             // create weather cards
                             for (var i = 0; i < 4; i++) {
                                 var convertedIndex = (i * 8);
@@ -51,7 +59,16 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
                             fetchGeoCityDB(lat, lon, 'from');
                             fetchYelp(cityName, 'from');
 
+                            $yelpTitle = $('<h2>').text('Recommended Restaurants:');
+                            $('.y-title').append($yelpTitle);
+
+
+
                         } else if (toOrFrom === 'to'){  // achieve weather data for the cityTo data 
+
+                            //create weather forecast title
+                            $forecastTitle = $('<h3>').text('4-day forecast of ' + cityName + ':');
+                            $('.forecast-title-to').append($forecastTitle);
 
                             for (var i = 0; i < 4; i++) {
                                 var convertedIndex = (i * 8);
@@ -59,8 +76,8 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
                                 var iconURL = "http://openweathermap.org/img/w/" + data.list[convertedIndex].weather[0].icon + ".png";
                                 var tempStr = data.list[convertedIndex].main.temp;
                                 var humidityStr = data.list[convertedIndex].main.humidity;
-                                var $watherCard = createWeatherCard (dateString, iconURL, tempStr, humidityStr, true)
-                                $('.w-to').append($watherCard);
+                                var $weatherCard = createWeatherCard (dateString, iconURL, tempStr, humidityStr, true)
+                                $('.w-to').append($weatherCard);
                             }
 
                             fetchYelp(cityName, 'to');
@@ -140,18 +157,24 @@ function fetchYelp(cityName, toOrFrom){
     };
     
     fetch("https://secure-shelf-42257.herokuapp.com/https://api.yelp.com/v3/businesses/search?location=" + cityName, requestOptions)
-      .then(response => response.json())
-      .then(result => {
-          console.log(result);
-          if (toOrFrom === 'from' || toOrFrom === 'to'){
-            for(var i = 0; i < 4; i++){
-                $('.y-' + toOrFrom).append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, toOrFrom === 'to'));
+        .then(response => response.json())
+        .then(result => {
+            $restaurantListTitle = $('<h3>').text('Restaurants in ' + cityName + ':');
+            if (toOrFrom === 'from' ){
+                for(var i = 0; i < 4; i++){
+                    $('.yelp-list-title-from').append($restaurantListTitle);
+                    $('.y-' + toOrFrom).append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, toOrFrom === 'to'));
+                }
+            } else if(toOrFrom === 'to') {
+                for(var i = 0; i < 4; i++){
+                    $('.yelp-list-title-to').append($restaurantListTitle);
+                    $('.y-' + toOrFrom).append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, toOrFrom === 'to'));
+                }
+            } else {
+            console.log('you called the fetchYelp function incorrectly!');
             }
-          } else {
-              console.log('you called the fetchYelp function incorrectly!')
-          }
-      })
-      .catch(error => console.log('error', error));
+        })
+        .catch(error => console.log('error', error));
 }
 
 var addToTheList = function (){
@@ -221,11 +244,11 @@ function swapSearchToText (cityName){
 
 /**
  * 
- * @param {*} dateString 
- * @param {*} iconURL 
- * @param {*} tempStr 
- * @param {*} humidityStr 
- * @param {*} removable 
+ * @param {string} dateString 
+ * @param {string} iconURL 
+ * @param {string} tempStr 
+ * @param {string} humidityStr 
+ * @param {boolean} removable true if the card should be removable by user action. False if it shouldn't be removed. 
  * @returns 
  */
 function createWeatherCard (dateString, iconURL, tempStr, humidityStr, removable){
@@ -265,6 +288,7 @@ function createYelpCard (name, imgURL, removable){
     }
     return $card;
 }
+
 
 // When the web is loaded, create a search bar (the search bar will be deleted later)
 createSearchBar('from');
