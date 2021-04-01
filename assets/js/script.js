@@ -288,5 +288,5 @@ $('body').on('click', '.city-recommendation', function () {
     console.log("the city is being called");
     console.log(buttonValue);
 
-    openWeather(buttonValue);
+    fetchOpenWeather(buttonValue, 'to');
 });
