@@ -5,7 +5,7 @@ var apiKeyOW = "69b9ebd4d042c48c14532ef8693d871e";
 var searchInputEl =document.getElementById("search-input");
 var travelPathEl = document.getElementById("travel-path");
 // false if the second search bar is showing. True if it's showing
-var secondForm = false;
+var cityToDisplay = false;
 var cityFromHolder = '';
 var travelList = {};
 
@@ -66,11 +66,18 @@ var travelList = {};
 
 
                         } else if (toOrFrom === 'to'){  // achieve weather data for the cityTo data 
+
+                            if(cityToDisplay){
+                                $('.removable').remove();
+                                displayTravelList();
+                            }
                             saveTravelList(cityFromHolder, cityName);
-                            displayTravelList();
+                            
 
                             //create weather forecast title
-                            $forecastTitle = $('<h3>').text('4-day forecast of ' + cityName + ':');
+                            $forecastTitle = $('<h3>')
+                                .text('4-day forecast of ' + cityName + ':')
+                                .addClass('removable');
                             $('.forecast-title-to').append($forecastTitle);
 
                             for (var i = 0; i < 4; i++) {
@@ -84,6 +91,7 @@ var travelList = {};
                             }
 
                             fetchYelp(cityName, 'to');
+                            cityToDisplay = true;
                             
                         } else {
                             console.log('make sure to enter "to" or "from" when you call fetchOpenWeather function!')
@@ -169,6 +177,7 @@ function fetchYelp(cityName, toOrFrom){
                     $('.y-' + toOrFrom).append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, toOrFrom === 'to'));
                 }
             } else if(toOrFrom === 'to') {
+                $restaurantListTitle.addClass('removable');
                 $('.yelp-list-title-to').append($restaurantListTitle);
                 for(var i = 0; i < 4; i++){
                     $('.y-' + toOrFrom).append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, toOrFrom === 'to'));
@@ -324,7 +333,7 @@ function displayTravelList() {
     var $spanEl = $('<span>').text('Your travel list:');
 
     var $listRow = $('<div>')
-        .addClass('row grid-x')
+        .addClass('row grid-x removable')
         .append($spanEl)
         .append($ulEl)
 
