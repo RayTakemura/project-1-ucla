@@ -6,7 +6,7 @@ var searchInputEl =document.getElementById("search-input");
 var travelPathEl = document.getElementById("travel-path");
 // false if the second search bar is showing. True if it's showing
 var secondForm = false;
-
+var cityFromHolder = '';
 var travelList = {};
 
 
@@ -17,7 +17,7 @@ var travelList = {};
  * @param {string} cityName The name of the city that was entered by the user
  * @param {string} toOrFrom The function must be called with 'to' or 'from' to correctly store data in the correct object.
  */
-var fetchOpenWeather = function (cityName, toOrFrom) {
+ var fetchOpenWeather = function (cityName, toOrFrom) {
     // handling cities with spaces in their name
     var noSpaceCity = cityName.replace(" ", "+");
     var OWUrl ="https://api.openweathermap.org/data/2.5/forecast?q=" + noSpaceCity + "&appid=" + apiKeyOW + "&units=imperial";
@@ -34,6 +34,7 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
 
                         // achieve weather data for the cityFrom data
                         if (toOrFrom === 'from'){
+                            cityFromHolder = cityName;
 
                             //create section title for weather
                             $weatherTitle = $('<h2>').text('Weather:');
@@ -50,7 +51,7 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
                                 var iconURL = "http://openweathermap.org/img/w/" + data.list[convertedIndex].weather[0].icon + ".png";
                                 var tempStr = data.list[convertedIndex].main.temp;
                                 var humidityStr = data.list[convertedIndex].main.humidity;
-                                var $weatherCard = createWeatherCard (dateString, iconURL, tempStr, humidityStr, false);
+                                var $weatherCard = createWeatherCard (dateString, iconURL, tempStr, humidityStr, false)
                                 $('.w-from').append($weatherCard);
                             }  
 
@@ -62,7 +63,11 @@ var fetchOpenWeather = function (cityName, toOrFrom) {
                             $yelpTitle = $('<h2>').text('Recommended Restaurants:');
                             $('.y-title').append($yelpTitle);
 
+
+
                         } else if (toOrFrom === 'to'){  // achieve weather data for the cityTo data 
+                            saveTravelList(cityFromHolder, cityName);
+                            displayTravelList();
 
                             //create weather forecast title
                             $forecastTitle = $('<h3>').text('4-day forecast of ' + cityName + ':');
@@ -237,7 +242,7 @@ function swapSearchToText (cityName){
     var $cityNameEl = $('<li>')
         .text(cityName)
         .addClass('bullet');
-    $('ul').append($cityNameEl);
+    $('.search-form').append($cityNameEl);
 }
 
 /**
@@ -295,9 +300,53 @@ function createYelpCard (name, imgURL, removable){
     return $card;
 }
 
+function displayTravelList() {
+    $('.travel-list').remove();
+
+    travelList = JSON.parse(localStorage.getItem('travelListTTT'));
+
+    console.log(travelList);
+    
+    if(!travelList){
+        return;
+    }
+    
+    var $ulEl = $('<ul>').addClass('travel-list bullet');
+    for (var i = travelList.cityFrom.length - 1; i >= 0; i--){
+        var $buttonEl = $('<button>')
+            .text(travelList.cityFrom[i] + " to " + travelList.cityTo[i])
+            .addClass('button cell rounded');
+        var $travelPath = $('<li>')
+            .addClass('grid-x')
+            .append($buttonEl);
+        $ulEl.append($travelPath);
+    }
+    var $spanEl = $('<span>').text('Your travel list:');
+
+    var $listRow = $('<div>')
+        .addClass('row grid-x')
+        .append($spanEl)
+        .append($ulEl)
+
+    $('.search-history').append($listRow);
+}
+
+function saveTravelList(from, to){
+    if (!travelList){
+        travelList = {
+            cityFrom: [],
+            cityTo: []
+        }
+    }
+    travelList.cityFrom.push(from);
+    travelList.cityTo.push(to);
+    localStorage.setItem('travelListTTT', JSON.stringify(travelList));
+}
 
 // When the web is loaded, create a search bar (the search bar will be deleted later)
 createSearchBar('from');
+
+displayTravelList();
 
 
 $("body").submit(function(event) {
