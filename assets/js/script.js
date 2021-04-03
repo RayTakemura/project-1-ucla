@@ -19,6 +19,7 @@ var travelList = {};
  * @param {string} toOrFrom The function must be called with 'to' or 'from' to correctly store data in the correct object.
  */
  var fetchOpenWeather = function (cityName, toOrFrom) {
+
     // handling cities with spaces in their name
     var noSpaceCity = cityName.replace(" ", "+");
     var OWUrl ="https://api.openweathermap.org/data/2.5/forecast?q=" + noSpaceCity + "&appid=" + apiKeyOW + "&units=imperial";
@@ -104,12 +105,14 @@ var travelList = {};
                             console.log('make sure to enter "to" or "from" when you call fetchOpenWeather function!')
                             return;
                         }
+                        // remove error message if it exists
+                        $('.error-msg').remove();
                         
                     })
 
             // error handling for bad responses
             } else {
-                alert("Error: " + response.status);
+                alertUser(cityName);
             }
         })
     // catch error if there is an exception
@@ -196,10 +199,6 @@ function fetchYelp(cityName, toOrFrom){
             }
         })
         .catch(error => console.log('error', error));
-}
-
-var addToTheList = function (){
-    console.log("add to the list function called")
 }
 
 /**
@@ -361,7 +360,24 @@ function saveTravelList(from, to){
     localStorage.setItem('travelListTTT', JSON.stringify(travelList));
 }
 
-// function alertUser()
+
+function alertUser(cityName) {
+    //remove previous error message
+    $('.error-msg').remove();
+
+    // create a new error message
+    var $errorMsg = $('<span>')
+        .addClass('error-msg');
+    
+    if(cityName === ''){
+        $errorMsg.text('Please enter a city name!');
+    } else {
+        $errorMsg.text(cityName + ' is not found!')
+    }
+
+    $('.error').append($errorMsg);
+
+}
 
 // When the web is loaded, create a search bar (the search bar will be deleted later)
 createSearchBar('from');
@@ -371,6 +387,9 @@ displayTravelList();
 
 $("body").submit(function(event) {
     event.preventDefault();
+    // remove error message if it exists
+    // $('.error-msg').remove();
+    //remove titles to avoid duplicate code
     $('.h3').remove();
     if(event.target.matches('#from')){
         var searchInput = $('#search-input-from').val();
@@ -384,21 +403,25 @@ $("body").submit(function(event) {
 
 // ready the function to accept button clicks of nearby cities
 $('body').on('click', '.city-recommendation', function () {
-    var buttonValue = $(this).html();
+    // remove error message if it exists
+    // $('.error-msg').remove();
+    // remove titles to avoid the title to be shown multiple times!
     $('h3').remove();
-    console.log("the city is being called");
-    console.log(buttonValue);
+
+    // restore removed titles!
     $forecastTitle = $('<h3>').text('4-day forecast of ' + cityFromHolder + ':');
     $('.forecast-title-from').append($forecastTitle);
-
     $restaurantListTitle = $('<h3>').text('Restaurants in ' + cityFromHolder + ':');
     $('.yelp-list-title-from').append($restaurantListTitle);
 
+    var buttonValue = $(this).html();
     fetchOpenWeather(buttonValue, 'to');
 });
 
 
 $('body').on('click', '.history', function () {
+    // remove error message if it exists
+    // $('.error-msg').remove();
     var buttonValue = $(this).html().split(' to ');
     console.log("the city is being called");
     console.log(buttonValue);

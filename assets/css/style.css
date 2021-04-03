@@ -84,6 +84,10 @@ li {
     border-radius: 15px;
 }
 
+.error-msg{
+    color: red;
+}
+
 /* Extra small devices (phones, 600px and down) */
 @media only screen and (max-width: 600px) {
 
