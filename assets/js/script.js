@@ -1,13 +1,14 @@
-$(document).foundation();
+$(document).foundation(); // needed to make foundation work.
 
 var apiKeyOW = "69b9ebd4d042c48c14532ef8693d871e";
 
-var searchInputEl =document.getElementById("search-input");
-var travelPathEl = document.getElementById("travel-path");
-// false if the second search bar is showing. True if it's showing
+// false if the data for "city from" is not displayed. 
 var cityFromDisplay = false;
+// false if the data for "city to" is not displayed. 
 var cityToDisplay = false;
+// holds the name of city that the traveler is traveling from
 var cityFromHolder = '';
+// Stores all local storage data into this object
 var travelList = {};
 
 
@@ -42,6 +43,10 @@ var travelList = {};
                             $forecastTitle = $('<h3>').text('4-day forecast of ' + cityName + ':');
                             $('.forecast-title-from').append($forecastTitle);
 
+                            //create yelp recommendation title
+                            $restaurantListTitle = $('<h3>').text('Restaurants in ' + cityName + ':');
+                            $('.yelp-list-title-from').append($restaurantListTitle);
+
                             // create weather cards
                             for (var i = 0; i < 4; i++) {
                                 var convertedIndex = (i * 8);
@@ -52,28 +57,26 @@ var travelList = {};
                                 var $weatherCard = createWeatherCard (dateString, iconURL, tempStr, humidityStr, false)
                                 $('.w-from').append($weatherCard);
                             }  
+                            // if the "city from" data are not displayed yet, take the following actions:
                             if (!cityFromDisplay){
-                                //create section title for weather
+                                //create section title for weather and yelp data
                                 $weatherTitle = $('<h2>').text('Weather:');
                                 $('.w-title').append($weatherTitle);
+                                $yelpTitle = $('<h2>').text('Recommended Restaurants:');
+                                $('.y-title').append($yelpTitle);
 
                                 swapSearchToText(cityName);
                                 createSearchBar('to');
                                 fetchGeoCityDB(lat, lon, 'from');
-                                $yelpTitle = $('<h2>').text('Recommended Restaurants:');
-                                $('.y-title').append($yelpTitle);
-                                
                             }
-                            $restaurantListTitle = $('<h3>').text('Restaurants in ' + cityName + ':');
-                            $('.yelp-list-title-from').append($restaurantListTitle);
-                            
 
                             fetchYelp(cityName, 'from');
 
-                            cityFromDisplay = true;
+                            cityFromDisplay = true; //the "city from" data are displayed and marked
 
                         } else if (toOrFrom === 'to'){  // achieve weather data for the cityTo data 
 
+                            // if the "city to" data are displayed remove removable DOMs and display an updated travel list
                             if(cityToDisplay){
                                 $('.removable').remove();
                                 displayTravelList();
@@ -87,6 +90,7 @@ var travelList = {};
                                 .addClass('removable');
                             $('.forecast-title-to').append($forecastTitle);
 
+                            // create weather cards
                             for (var i = 0; i < 4; i++) {
                                 var convertedIndex = (i * 8);
                                 var dateString = moment().add(i, "days").format("L");
@@ -99,7 +103,7 @@ var travelList = {};
 
                             fetchYelp(cityName, 'to');
 
-                            cityToDisplay = true;
+                            cityToDisplay = true; //the "city to" data are displayed and marked
                             
                         } else {
                             console.log('make sure to enter "to" or "from" when you call fetchOpenWeather function!')
@@ -142,12 +146,10 @@ var fetchGeoCityDB = function (lat, lon) {
             response.json().then(function(data) {
                 var recCities = [];
                 
-                
                 for (var i = 2; i < 5; i++){// limit recommended searches to 3
-                    console.log(data.data[i].city);
-                    // citiesData.cityFrom.recCities.push(data.data[i].city);
                     recCities.push(data.data[i].city);
                 }
+                // create buttons that contains a recommended nearby cities that was searched by the user
                 var $cityRecSpanEl = $('<span>')
                     .text('Recommended cities: ')
                     .addClass('bullet cell small-2');
@@ -156,7 +158,6 @@ var fetchGeoCityDB = function (lat, lon) {
                     var $cityRecButtonEl = $('<a>')
                         .addClass('button radius info city-recommendation bullet cell small-1 rounded')
                         .text(recCities[i]);
-
                     $('.nearby-cities').append($cityRecButtonEl);
                 }
             })
@@ -167,7 +168,12 @@ var fetchGeoCityDB = function (lat, lon) {
     });
 }
 
-
+/**
+ * Fetches data from the yelp API.
+ * To break the CORS proxy barrier, a heroku app is used. (source: https://github.com/Rob--W/cors-anywhere)
+ * @param {string} cityName The name of the city to be searched through the yelp api
+ * @param {string} toOrFrom Whether the user wants this information for the city that they're traveling from or to
+ */
 function fetchYelp(cityName, toOrFrom){
     var myHeaders = new Headers();
     myHeaders.append("Authorization", "Bearer 9L0XxHNnQJiXPX5w0XuGqhOYZXx0CwmKc9sOc00ApKSApzvm0Etd3WpzKJL4T3zDRv0BotBJrUlPcHx140lZirnebjVbI45MD6KPNziXR1s1hXt2g51db7EwOhBdYHYx");
@@ -181,20 +187,20 @@ function fetchYelp(cityName, toOrFrom){
     fetch("https://secure-shelf-42257.herokuapp.com/https://api.yelp.com/v3/businesses/search?location=" + cityName, requestOptions)
         .then(response => response.json())
         .then(result => {
-            
-            if (toOrFrom === 'from' ){
-                
-                for(var i = 0; i < 4; i++){
-                    $('.y-' + toOrFrom).append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, toOrFrom === 'to'));
-                }
-            } else if(toOrFrom === 'to') {
+
+            // create weather cards
+            for(var i = 0; i < 4; i++){
+                    var restaurantName = result.businesses[i].name;
+                    var imgURL = result.businesses[i].image_url;
+                    var rating = result.businesses[i].rating;
+                    var price = result.businesses[i].price;
+                    $('.y-' + toOrFrom).append(createYelpCard (restaurantName, imgURL, rating, price, toOrFrom === 'to'));
+            }
+            if(toOrFrom === 'to') {
                 $restaurantListTitle = $('<h3>').text('Restaurants in ' + cityName + ':');
                 $restaurantListTitle.addClass('removable');
                 $('.yelp-list-title-to').append($restaurantListTitle);
-                for(var i = 0; i < 4; i++){
-                    $('.y-' + toOrFrom).append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, toOrFrom === 'to'));
-                }
-            } else {
+            } else if(toOrFrom !== 'from') {
             console.log('you called the fetchYelp function incorrectly!');
             }
         })
@@ -263,19 +269,20 @@ function swapSearchToText (cityName){
 }
 
 /**
- * 
+ * Creates a single weather card with data stored for that day's forcast
  * @param {string} dateString the date of the forecast
  * @param {string} iconURL the URL of the icon from openWeather
  * @param {string} tempStr the temperature in Fahrenheit
  * @param {string} humidityStr the humidity value in percent 
  * @param {boolean} removable true if the card should be removable by user action. False if it shouldn't be removed. 
- * @returns 
+ * @returns The card to be appeneded to the proper html container
  */
 function createWeatherCard (dateString, iconURL, tempStr, humidityStr, removable){
+    // create date and weather icon elements
     $date = $('<h4>').text(dateString);
     $icon = $('<img>').attr('src', iconURL);
 
-    
+    // create row and humidity elemnts and wrap them with row container to have them line up vertically
     $temp = $('<span>').text("Temp: " + tempStr + "°F");
     $tempRow = $('<div>').addClass('row');
     $tempRow.append($temp);
@@ -284,12 +291,15 @@ function createWeatherCard (dateString, iconURL, tempStr, humidityStr, removable
     $humidRow = $('<div>').addClass('row');
     $humidRow.append($humidity);
 
+    // append all of the above elements into a card section container styled by foundation
     $cardSection = $('<div>')
         .addClass('card-section')
         .append($date)
         .append($icon)
         .append($tempRow)
         .append($humidRow);
+
+    // append card section container by card container
     $card = $('<div>')
         .addClass('card cell small-2 rounded w-card')
         .append($cardSection);
@@ -300,23 +310,61 @@ function createWeatherCard (dateString, iconURL, tempStr, humidityStr, removable
 
 }
 
-
-function createYelpCard (name, imgURL, removable){
-    $name = $('<h4>').text(name);
+/**
+ * Creates Yelp card that holds data about the searched restaurant.
+ * @param {string} name The name of the restaurant.
+ * @param {string} imgURL The image about the restaurant that was provided by yelp.
+ * @param {string} rating The average rating of the restaurant given by users
+ * @param {string} price The price the restaurant on the scale of 1-5 (in dollar signs $$$$$)
+ * @param {boolean} removable true if the card should be removable by user action. False if it shouldn't be removed. 
+ * @returns The card to be appeneded to the proper html container
+ */
+function createYelpCard (name, imgURL, rating, price, removable){
+    //create elements for the name of the restaurant and the image for it
+    $name = $('<h4>').text(name); 
     $img = $('<img>').attr('src', imgURL).attr('width', '150px');
+
+    //create elements for rating and price
+    $rating = $('<span>')
+    if (rating){
+        $rating.text('Rating: ' + rating);
+    } else {
+        $rating.text('Rating: N/A');
+    }
+    $ratingRow = $('<div>')
+        .addClass('row')
+        .append($rating);
+
+    $price = $('<span>')
+        .text('Price: ' + price);
+    $priceRow = $('<div>')
+        .addClass('row')
+        .append($price);
+    
+    // append all of the above to a card section container that is styled by foundation
     $cardSection = $('<div>')
         .addClass('card-section')
         .append($name)
         .append($img)
+        .append($ratingRow)
+        .append($priceRow);
+
+    // append the card section to a card container that is styled by foundation
     $card = $('<div>')
         .addClass('card cell small-2 rounded yelp-card')
         .append($cardSection);
+
+    // if the card should be removable with a simple search, add a class as a marking
     if (removable){
         $card.addClass('removable');
     }
     return $card;
 }
 
+/**
+ * Displays the list of search history that the user have searched with his/her browser.
+ * @returns false if there is nothing to be displayed. Nothing is returned if there are things to be displayed
+ */
 function displayTravelList() {
     $('.travel-list').remove();
 
@@ -348,6 +396,11 @@ function displayTravelList() {
     $('.search-history').append($listRow);
 }
 
+/**
+ * Saves a set of cities that the user chose to travel
+ * @param {string} from The city that the user is traveling from
+ * @param {string} to The city that the user is trying to travel to 
+ */
 function saveTravelList(from, to){
     if (!travelList){
         travelList = {
@@ -360,7 +413,10 @@ function saveTravelList(from, to){
     localStorage.setItem('travelListTTT', JSON.stringify(travelList));
 }
 
-
+/**
+ * Alert the user if the user entered an invalid city.
+ * @param {string} cityName The name of the city that the user tried to search
+ */
 function alertUser(cityName) {
     //remove previous error message
     $('.error-msg').remove();
@@ -426,13 +482,16 @@ $('body').on('click', '.history', function () {
     console.log("the city is being called");
     console.log(buttonValue);
 
+    // remove all items to prevent duplicate displays
     $('h3').remove();
     $('.card').remove();
     $('.removable').remove();
     cityToDisplay = false;
 
-
+    //fetch for all data needed 
     fetchOpenWeather(buttonValue[0], 'from');
     fetchOpenWeather(buttonValue[1], 'to');
+
+    //show updated travel list history
     displayTravelList();
 });
