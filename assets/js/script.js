@@ -5,6 +5,7 @@ var apiKeyOW = "69b9ebd4d042c48c14532ef8693d871e";
 var searchInputEl =document.getElementById("search-input");
 var travelPathEl = document.getElementById("travel-path");
 // false if the second search bar is showing. True if it's showing
+var cityFromDisplay = false;
 var cityToDisplay = false;
 var cityFromHolder = '';
 var travelList = {};
@@ -36,10 +37,6 @@ var travelList = {};
                         if (toOrFrom === 'from'){
                             cityFromHolder = cityName;
 
-                            //create section title for weather
-                            $weatherTitle = $('<h2>').text('Weather:');
-                            $('.w-title').append($weatherTitle);
-
                             //create weather forecast title
                             $forecastTitle = $('<h3>').text('4-day forecast of ' + cityName + ':');
                             $('.forecast-title-from').append($forecastTitle);
@@ -54,16 +51,25 @@ var travelList = {};
                                 var $weatherCard = createWeatherCard (dateString, iconURL, tempStr, humidityStr, false)
                                 $('.w-from').append($weatherCard);
                             }  
+                            if (!cityFromDisplay){
+                                //create section title for weather
+                                $weatherTitle = $('<h2>').text('Weather:');
+                                $('.w-title').append($weatherTitle);
 
-                            swapSearchToText(cityName);
-                            createSearchBar('to');
-                            fetchGeoCityDB(lat, lon, 'from');
+                                swapSearchToText(cityName);
+                                createSearchBar('to');
+                                fetchGeoCityDB(lat, lon, 'from');
+                                $yelpTitle = $('<h2>').text('Recommended Restaurants:');
+                                $('.y-title').append($yelpTitle);
+                                
+                            }
+                            $restaurantListTitle = $('<h3>').text('Restaurants in ' + cityName + ':');
+                            $('.yelp-list-title-from').append($restaurantListTitle);
+                            
+
                             fetchYelp(cityName, 'from');
 
-                            $yelpTitle = $('<h2>').text('Recommended Restaurants:');
-                            $('.y-title').append($yelpTitle);
-
-
+                            cityFromDisplay = true;
 
                         } else if (toOrFrom === 'to'){  // achieve weather data for the cityTo data 
 
@@ -91,6 +97,7 @@ var travelList = {};
                             }
 
                             fetchYelp(cityName, 'to');
+
                             cityToDisplay = true;
                             
                         } else {
@@ -132,6 +139,7 @@ var fetchGeoCityDB = function (lat, lon) {
             response.json().then(function(data) {
                 var recCities = [];
                 
+                
                 for (var i = 2; i < 5; i++){// limit recommended searches to 3
                     console.log(data.data[i].city);
                     // citiesData.cityFrom.recCities.push(data.data[i].city);
@@ -170,13 +178,14 @@ function fetchYelp(cityName, toOrFrom){
     fetch("https://secure-shelf-42257.herokuapp.com/https://api.yelp.com/v3/businesses/search?location=" + cityName, requestOptions)
         .then(response => response.json())
         .then(result => {
-            $restaurantListTitle = $('<h3>').text('Restaurants in ' + cityName + ':');
+            
             if (toOrFrom === 'from' ){
-                $('.yelp-list-title-from').append($restaurantListTitle);
+                
                 for(var i = 0; i < 4; i++){
                     $('.y-' + toOrFrom).append(createYelpCard (result.businesses[i].name, result.businesses[i].image_url, toOrFrom === 'to'));
                 }
             } else if(toOrFrom === 'to') {
+                $restaurantListTitle = $('<h3>').text('Restaurants in ' + cityName + ':');
                 $restaurantListTitle.addClass('removable');
                 $('.yelp-list-title-to').append($restaurantListTitle);
                 for(var i = 0; i < 4; i++){
@@ -324,7 +333,7 @@ function displayTravelList() {
     for (var i = travelList.cityFrom.length - 1; i >= 0; i--){
         var $buttonEl = $('<button>')
             .text(travelList.cityFrom[i] + " to " + travelList.cityTo[i])
-            .addClass('button cell rounded');
+            .addClass('button cell rounded history');
         var $travelPath = $('<li>')
             .addClass('grid-x')
             .append($buttonEl);
@@ -352,6 +361,8 @@ function saveTravelList(from, to){
     localStorage.setItem('travelListTTT', JSON.stringify(travelList));
 }
 
+// function alertUser()
+
 // When the web is loaded, create a search bar (the search bar will be deleted later)
 createSearchBar('from');
 
@@ -360,6 +371,7 @@ displayTravelList();
 
 $("body").submit(function(event) {
     event.preventDefault();
+    $('.h3').remove();
     if(event.target.matches('#from')){
         var searchInput = $('#search-input-from').val();
         fetchOpenWeather(searchInput,'from');
@@ -373,8 +385,31 @@ $("body").submit(function(event) {
 // ready the function to accept button clicks of nearby cities
 $('body').on('click', '.city-recommendation', function () {
     var buttonValue = $(this).html();
+    $('h3').remove();
+    console.log("the city is being called");
+    console.log(buttonValue);
+    $forecastTitle = $('<h3>').text('4-day forecast of ' + cityFromHolder + ':');
+    $('.forecast-title-from').append($forecastTitle);
+
+    $restaurantListTitle = $('<h3>').text('Restaurants in ' + cityFromHolder + ':');
+    $('.yelp-list-title-from').append($restaurantListTitle);
+
+    fetchOpenWeather(buttonValue, 'to');
+});
+
+
+$('body').on('click', '.history', function () {
+    var buttonValue = $(this).html().split(' to ');
     console.log("the city is being called");
     console.log(buttonValue);
 
-    fetchOpenWeather(buttonValue, 'to');
+    $('h3').remove();
+    $('.card').remove();
+    $('.removable').remove();
+    cityToDisplay = false;
+
+
+    fetchOpenWeather(buttonValue[0], 'from');
+    fetchOpenWeather(buttonValue[1], 'to');
+    displayTravelList();
 });
