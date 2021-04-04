@@ -8,9 +8,9 @@ their trip by recommending cities nearby them.
 
 ## Demo
 <img src="./assets/images/demo1.PNG" alt='first picture of demo' width=404>
-<img src="./assets/images/demo2.png" alt='second picture of demo' width=404>
-<img src="./assets/images/demo3.png" alt='third picture of demo' width=404>
-<img src="./assets/images/demo4.png" alt='third picture of demo' width=404>
+<img src="./assets/images/demo2.PNG" alt='second picture of demo' width=404>
+<img src="./assets/images/demo3.PNG" alt='third picture of demo' width=404>
+<img src="./assets/images/demo4.PNG" alt='third picture of demo' width=404>
 
 ## Built With
 * HTML
