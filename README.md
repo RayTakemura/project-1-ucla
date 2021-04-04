@@ -9,10 +9,17 @@ their trip by recommending cities nearby them.
 ## Demo
 The home screen:
 <img src="./assets/images/demo1.PNG" alt='first picture of demo' width=404>
+
+
 After searching in the "City that you're traveling from:" search bar:
+
 <img src="./assets/images/demo2.PNG" alt='second picture of demo' width=404>
+
+
 Result of the weather cards after searching for the city that the traveler is traveling to:
 <img src="./assets/images/demo3.PNG" alt='third picture of demo' width=404>
+
+
 Result of the restaurant cards after searching for the city that the traveler is traveling to:
 <img src="./assets/images/demo4.PNG" alt='third picture of demo' width=404>
 
